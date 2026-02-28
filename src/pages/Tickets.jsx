@@ -1,5 +1,8 @@
 import { useState } from "react";
 import Layout from "../components/Layout";
+import TicketForm from "../components/tickets/TicketForm";
+import TicketTable from "../components/tickets/TicketTable";
+import TicketFilterBar from "../components/tickets/TicketFilterBar";
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([
@@ -28,6 +31,14 @@ export default function Tickets() {
 
   const [editId, setEditId] = useState(null);
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const filteredTickets = tickets.filter((t) => {
+    const matchSearch = t.title.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === "all" ? true : t.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
@@ -36,11 +47,7 @@ export default function Tickets() {
     e.preventDefault();
 
     if (editId) {
-      setTickets(
-        tickets.map((t) =>
-          t.id === editId ? { ...t, ...form } : t
-        )
-      );
+      setTickets(tickets.map((t) => (t.id === editId ? { ...t, ...form } : t)));
       setEditId(null);
     } else {
       const newTicket = {
@@ -72,91 +79,12 @@ export default function Tickets() {
   return (
     <Layout>
       <h2 className="text-2xl font-bold mb-4">Ticket Incident</h2>
-
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow mb-6 space-y-3">
-        <input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="Judul Ticket"
-          className="border p-2 w-full rounded"
-          required
-        />
-
-        <input
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          placeholder="Kategori (IT Support / DC Ops)"
-          className="border p-2 w-full rounded"
-          required
-        />
-
-        <select
-          name="priority"
-          value={form.priority}
-          onChange={handleChange}
-          className="border p-2 w-full rounded"
-        >
-          <option>Low</option>
-          <option>Medium</option>
-          <option>High</option>
-        </select>
-
-        <select
-          name="status"
-          value={form.status}
-          onChange={handleChange}
-          className="border p-2 w-full rounded"
-        >
-          <option>Open</option>
-          <option>In Progress</option>
-          <option>Closed</option>
-        </select>
-
-        <button className="bg-blue-600 text-white px-4 py-2 rounded">
-          {editId ? "Update Ticket" : "Add Ticket"}
-        </button>
-      </form>
-
+      <TicketForm form={form} onChange={handleChange} onSubmit={handleSubmit} editId={editId} />
       {/* Table */}
       <div className="bg-white rounded shadow overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-left">
-            <tr>
-              <th className="p-2">Title</th>
-              <th className="p-2">Category</th>
-              <th className="p-2">Priority</th>
-              <th className="p-2">Status</th>
-              <th className="p-2">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map((t) => (
-              <tr key={t.id} className="border-t">
-                <td className="p-2">{t.title}</td>
-                <td className="p-2">{t.category}</td>
-                <td className="p-2">{t.priority}</td>
-                <td className="p-2">{t.status}</td>
-                <td className="p-2 space-x-2">
-                  <button
-                    onClick={() => handleEdit(t)}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(t.id)}
-                    className="text-red-600 hover:underline"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TicketFilterBar search={search} setSearch={setSearch} status={statusFilter} setStatus={setStatusFilter} />
+
+        <TicketTable tickets={filteredTickets} onEdit={handleEdit} onDelete={handleDelete} />
       </div>
     </Layout>
   );
