@@ -3,6 +3,7 @@ import Layout from "../components/Layout";
 import TicketForm from "../components/tickets/TicketForm";
 import TicketTable from "../components/tickets/TicketTable";
 import TicketFilterBar from "../components/tickets/TicketFilterBar";
+import DeleteConfirmModal from "../components/tickets/DeleteConfirmModal";
 
 export default function Tickets() {
   const [tickets, setTickets] = useState([
@@ -39,6 +40,9 @@ export default function Tickets() {
     const matchStatus = statusFilter === "all" ? true : t.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
@@ -70,10 +74,19 @@ export default function Tickets() {
     setEditId(ticket.id);
   }
 
-  function handleDelete(id) {
-    if (confirm("Yakin mau hapus ticket ini?")) {
-      setTickets(tickets.filter((t) => t.id !== id));
-    }
+  function openDeleteModal(id) {
+    setDeleteId(id);
+    setOpenDelete(true);
+  }
+
+  function closeDeleteModal() {
+    setOpenDelete(false);
+    setDeleteId(null);
+  }
+
+  function confirmDelete() {
+    setTickets(tickets.filter((t) => t.id !== deleteId));
+    closeDeleteModal();
   }
 
   return (
@@ -84,8 +97,9 @@ export default function Tickets() {
       <div className="bg-white rounded shadow overflow-x-auto">
         <TicketFilterBar search={search} setSearch={setSearch} status={statusFilter} setStatus={setStatusFilter} />
 
-        <TicketTable tickets={filteredTickets} onEdit={handleEdit} onDelete={handleDelete} />
+        <TicketTable tickets={filteredTickets} onEdit={handleEdit} onDelete={openDeleteModal} />
       </div>
+      <DeleteConfirmModal open={openDelete} onClose={closeDeleteModal} onConfirm={confirmDelete} />
     </Layout>
   );
 }

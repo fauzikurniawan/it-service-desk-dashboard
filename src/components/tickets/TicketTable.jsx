@@ -1,3 +1,4 @@
+import TicketEmptyState from "./TicketEmptyState";
 export default function TicketTable({ tickets, onEdit, onDelete }) {
   return (
     <div className="bg-white rounded shadow overflow-x-auto">
@@ -49,13 +50,7 @@ export default function TicketTable({ tickets, onEdit, onDelete }) {
             </tr>
           ))}
 
-          {tickets.length === 0 && (
-            <tr>
-              <td colSpan="5" className="py-10 text-center text-slate-400">
-                No tickets found
-              </td>
-            </tr>
-          )}
+          {tickets.length === 0 && <TicketEmptyState />}
         </tbody>
       </table>
     </div>
